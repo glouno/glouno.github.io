@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Tindr</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        #task-box { font-size: 24px; margin: 20px; }
+        button { padding: 10px 20px; font-size: 18px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Task Tindr</h1>
+    <div id="task-box">Loading task...</div>
+    <button onclick="rejectTask()">❌ Reject</button>
+    <button onclick="laterTask()">🤷 Maybe Later</button>
+
+    <script>
+        const tasks = ["Write that report", "Exercise", "Fix your LinkedIn", "Study", "Clean your room", "Email that client"];
+        function getRandomTask() {
+            return tasks[Math.floor(Math.random() * tasks.length)];
+        }
+        function rejectTask() {
+            document.getElementById("task-box").innerText = getRandomTask();
+        }
+        function laterTask() {
+            alert("Task saved for later! (But we both know you won't do it.)");
+        }
+        document.getElementById("task-box").innerText = getRandomTask();
+    </script>
+</body>
+</html>
