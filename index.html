@@ -11,6 +11,7 @@
       padding: 50px; 
       background-color: #f8f9fa;
       overflow: hidden;
+      position: relative;
     }
     #task-box {
       font-size: 24px; 
@@ -84,6 +85,17 @@
       background-color: #ffeb3b;
       font-weight: bold;
     }
+    /* Insult style */
+    .insult {
+      position: absolute;
+      font-size: 20px;
+      color: red;
+      font-weight: bold;
+      transform: rotate(-15deg);
+      opacity: 1;
+      transition: opacity 1s ease-in-out;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -93,16 +105,16 @@
   <button class="reject-btn" onclick="rejectTask()">❌ Reject</button>
   <button class="later-btn" onclick="laterTask()">🤷 Maybe Later</button>
   <div id="task-graveyard"></div>
-
+  
   <div class="archive-container">
     <button class="archive-btn" onclick="toggleArchive()">📦 Archive</button>
   </div>
-
+  
   <div id="task-archive" class="hidden">
     <h3>Archived Tasks (Which You Won't Do)</h3>
     <ul id="archive-list"></ul>
   </div>
-
+  
   <div class="leaderboard-container">
     <h2>🏆 Leaderboard of Procrastination 🏆</h2>
     <table class="leaderboard-table">
@@ -116,9 +128,9 @@
       <tbody id="leaderboard-body"></tbody>
     </table>
   </div>
-
+  
   <audio id="boo-sound" src="https://www.myinstants.com/media/sounds/boo-sound-effect.mp3"></audio>
-
+  
   <script>
     const tasks = [
       "Write that report", "Go to the gym", "Fix your LinkedIn", 
@@ -126,6 +138,11 @@
       "Organize your files", "Learn a new skill", "Cook a healthy meal",
       "Read a book", "Prepare for your meeting", "Clean your room",
       "Make a budget", "Plan your week", "Meditate for 10 min"
+    ];
+    const insults = [
+      "Seriously? That was easy!", "Your future self is shaking their head.", 
+      "Good luck explaining this to your boss.", "You're on fire! (In a bad way)", 
+      "Champions don't reject tasks!", "Wow, just wow."
     ];
     let rejectedTasks = [];
     let archivedTasks = [];
@@ -138,11 +155,11 @@
       { username: "CouchPotato", score: 49 }
     ];
     leaderboard.push(currentUser);
-
+  
     function getRandomTask() {
       return tasks[Math.floor(Math.random() * tasks.length)];
     }
-
+  
     function rejectTask() {
       let taskBox = document.getElementById("task-box");
       let task = taskBox.innerText;
@@ -150,7 +167,14 @@
       currentUser.score++;
       updateTaskGraveyard();
       updateLeaderboard();
+  
+      // Play booing sound
       document.getElementById("boo-sound").play();
+  
+      // Show random insult
+      showInsult();
+  
+      // Animation before changing task
       taskBox.style.transform = "translateX(-100px) rotate(-10deg)";
       taskBox.style.opacity = "0";
       setTimeout(() => {
@@ -159,11 +183,17 @@
         taskBox.style.opacity = "1";
       }, 300);
     }
-
-    // New function for the "Maybe Later" button
+  
     function laterTask() {
+      // Show pop-up message before saving the task for later
+      alert("Task saved for later! (But we both know you won't do it.)");
+      
       let taskBox = document.getElementById("task-box");
-      // Optionally, you might not want to increase the score here.
+      let task = taskBox.innerText;
+      archivedTasks.push(task);
+      updateTaskArchive();
+  
+      // Optional animation for "Maybe Later"
       taskBox.style.transform = "translateX(100px) rotate(10deg)";
       taskBox.style.opacity = "0";
       setTimeout(() => {
@@ -172,21 +202,41 @@
         taskBox.style.opacity = "1";
       }, 300);
     }
-
-    // New function to toggle the archive section visibility
+  
+    function updateTaskGraveyard() {
+      document.getElementById("task-graveyard").innerHTML = 
+        `<strong>Rejected tasks:</strong> ${rejectedTasks.join(", ")}`;
+    }
+    
+    function updateTaskArchive() {
+      let archiveList = document.getElementById("archive-list");
+      archiveList.innerHTML = "";
+      archivedTasks.forEach(task => {
+        let li = document.createElement("li");
+        li.textContent = task;
+        archiveList.appendChild(li);
+      });
+    }
+    
     function toggleArchive() {
       let archiveDiv = document.getElementById("task-archive");
       archiveDiv.classList.toggle("hidden");
     }
-
-    // New function to update the task graveyard display
-    function updateTaskGraveyard() {
-      let graveyardDiv = document.getElementById("task-graveyard");
-      graveyardDiv.innerHTML = "<h3>Task Graveyard</h3><ul>" +
-        rejectedTasks.map(task => `<li>${task}</li>`).join("") +
-        "</ul>";
+    
+    function showInsult() {
+      let insultText = insults[Math.floor(Math.random() * insults.length)];
+      let insultElement = document.createElement("div");
+      insultElement.className = "insult";
+      insultElement.innerText = insultText;
+      insultElement.style.left = Math.random() * 80 + "%";
+      insultElement.style.top = Math.random() * 80 + "%";
+      document.body.appendChild(insultElement);
+      setTimeout(() => {
+        insultElement.style.opacity = "0";
+        setTimeout(() => insultElement.remove(), 1000);
+      }, 2000);
     }
-
+  
     function updateLeaderboard() {
       let leaderboardBody = document.getElementById("leaderboard-body");
       leaderboard.sort((a, b) => b.score - a.score);
@@ -200,7 +250,7 @@
         leaderboardBody.innerHTML += row;
       });
     }
-
+  
     // Initialize the task and leaderboard on page load
     document.getElementById("task-box").innerText = getRandomTask();
     updateLeaderboard();
