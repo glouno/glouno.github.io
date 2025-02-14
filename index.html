@@ -1,179 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Tindr</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            text-align: center; 
-            padding: 50px; 
-            background-color: #f8f9fa;
-            overflow: hidden;
-        }
-        #task-box {
-            font-size: 24px; 
-            margin: 20px auto; 
-            padding: 20px; 
-            background: white; 
-            border-radius: 10px; 
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            width: 60%;
-            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 18px;
-            margin: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .reject-btn {
-            background-color: #e74c3c;
-            color: white;
-        }
-        .later-btn {
-            background-color: #f39c12;
-            color: white;
-        }
-        .reject-btn:hover { background-color: #c0392b; }
-        .later-btn:hover { background-color: #d68910; }
-        .archive-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-        }
-        .archive-btn {
-            background-color: #3498db;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            border: none;
-        }
-        .archive-btn:hover { background-color: #2980b9; }
-        #task-graveyard, #task-archive {
-            margin-top: 30px;
-            font-size: 14px;
-            color: gray;
-        }
-        .hidden {
-            display: none;
-        }
-        .insult, .gif {
-            position: absolute;
-            font-size: 20px;
-            color: red;
-            font-weight: bold;
-            transform: rotate(15deg);
-            opacity: 1;
-            transition: opacity 1s ease-in-out;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Tindr</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      text-align: center; 
+      padding: 50px; 
+      background-color: #f8f9fa;
+      overflow: hidden;
+    }
+    #task-box {
+      font-size: 24px; 
+      margin: 20px auto; 
+      padding: 20px; 
+      background: white; 
+      border-radius: 10px; 
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      width: 60%;
+      transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .reject-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+    .later-btn {
+      background-color: #f39c12;
+      color: white;
+    }
+    .reject-btn:hover { background-color: #c0392b; }
+    .later-btn:hover { background-color: #d68910; }
+    .archive-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+    }
+    .archive-btn {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      border: none;
+    }
+    .archive-btn:hover { background-color: #2980b9; }
+    #task-graveyard, #task-archive, #leaderboard {
+      margin-top: 30px;
+      font-size: 14px;
+      color: gray;
+    }
+    .hidden {
+      display: none;
+    }
+    .leaderboard-container {
+      margin-top: 40px;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+    }
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .leaderboard-table th, .leaderboard-table td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .current-user {
+      background-color: #ffeb3b;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <h1>🔥 Task Tindr 🔥</h1>
-    <p>Swipe left on productivity, embrace procrastination!</p>
-    <div id="task-box">Loading task...</div>
-    <button class="reject-btn" onclick="rejectTask()">❌ Reject</button>
-    <button class="later-btn" onclick="laterTask()">🤷 Maybe Later</button>
-    <div id="task-graveyard"></div>
-    
-    <div class="archive-container">
-        <button class="archive-btn" onclick="toggleArchive()">📦 Archive</button>
-    </div>
-    
-    <div id="task-archive" class="hidden">
-        <h3>Archived Tasks (Which You Won't Do)</h3>
-        <ul id="archive-list"></ul>
-    </div>
-    
-    <audio id="boo-sound" src="https://www.myinstants.com/media/sounds/boo-sound-effect.mp3"></audio>
-    
-    <script>
-        const tasks = [
-            "Write that report", "Go to the gym", "Fix your LinkedIn", 
-            "Study for your exam", "Reply to your emails", "Call your parents",
-            "Organize your files", "Learn a new skill", "Cook a healthy meal",
-            "Read a book", "Prepare for your meeting", "Clean your room",
-            "Make a budget", "Plan your week", "Meditate for 10 min"
-        ];
-        const insults = [
-            "Seriously? That was easy!", "Your future self is shaking their head.", 
-            "Good luck explaining this to your boss.", "You're on fire! (In a bad way)", 
-            "Champions don't reject tasks!", "Wow, just wow."
-        ];
-        const gifs = [
-            "https://media.giphy.com/media/3o7TKU8RvQuomFfUUU/giphy.gif",
-            "https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif",
-            "https://media.giphy.com/media/26AHONQ79FdWZhAI0/giphy.gif",
-            "https://media.giphy.com/media/d2lcHJTG5Tscg/giphy.gif"
-        ];
-        
-        let rejectedTasks = [];
-        let archivedTasks = [];
+  <h1>🔥 Task Tindr 🔥</h1>
+  <p>Swipe left on productivity, embrace procrastination!</p>
+  <div id="task-box">Loading task...</div>
+  <button class="reject-btn" onclick="rejectTask()">❌ Reject</button>
+  <button class="later-btn" onclick="laterTask()">🤷 Maybe Later</button>
+  <div id="task-graveyard"></div>
 
-        function getRandomTask() {
-            return tasks[Math.floor(Math.random() * tasks.length)];
-        }
+  <div class="archive-container">
+    <button class="archive-btn" onclick="toggleArchive()">📦 Archive</button>
+  </div>
 
-        function rejectTask() {
-            let taskBox = document.getElementById("task-box");
-            let task = taskBox.innerText;
-            rejectedTasks.push(task);
-            updateTaskGraveyard();
-            
-            // Play booing sound
-            document.getElementById("boo-sound").play();
-            
-            // Show random insult
-            showInsult();
-            
-            // Show random gif
-            showGif();
-            
-            // Add animation before changing task
-            taskBox.style.transform = "translateX(-100px) rotate(-10deg)";
-            taskBox.style.opacity = "0";
-            setTimeout(() => {
-                taskBox.innerText = getRandomTask();
-                taskBox.style.transform = "translateX(0) rotate(0)";
-                taskBox.style.opacity = "1";
-            }, 300);
-        }
+  <div id="task-archive" class="hidden">
+    <h3>Archived Tasks (Which You Won't Do)</h3>
+    <ul id="archive-list"></ul>
+  </div>
 
-        function showInsult() {
-            let insultText = insults[Math.floor(Math.random() * insults.length)];
-            let insultElement = document.createElement("div");
-            insultElement.className = "insult";
-            insultElement.innerText = insultText;
-            insultElement.style.left = Math.random() * 80 + "%";
-            insultElement.style.top = Math.random() * 80 + "%";
-            document.body.appendChild(insultElement);
-            setTimeout(() => {
-                insultElement.style.opacity = "0";
-                setTimeout(() => insultElement.remove(), 1000);
-            }, 2000);
-        }
-        
-        function showGif() {
-            let gifUrl = gifs[Math.floor(Math.random() * gifs.length)];
-            let gifElement = document.createElement("img");
-            gifElement.className = "gif";
-            gifElement.src = gifUrl;
-            gifElement.style.left = Math.random() * 80 + "%";
-            gifElement.style.top = Math.random() * 80 + "%";
-            gifElement.style.width = "100px";
-            document.body.appendChild(gifElement);
-            setTimeout(() => {
-                gifElement.style.opacity = "0";
-                setTimeout(() => gifElement.remove(), 1000);
-            }, 3000);
-        }
-    </script>
+  <div class="leaderboard-container">
+    <h2>🏆 Leaderboard of Procrastination 🏆</h2>
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Username</th>
+          <th>Tasks Rejected</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboard-body"></tbody>
+    </table>
+  </div>
+
+  <audio id="boo-sound" src="https://www.myinstants.com/media/sounds/boo-sound-effect.mp3"></audio>
+
+  <script>
+    const tasks = [
+      "Write that report", "Go to the gym", "Fix your LinkedIn", 
+      "Study for your exam", "Reply to your emails", "Call your parents",
+      "Organize your files", "Learn a new skill", "Cook a healthy meal",
+      "Read a book", "Prepare for your meeting", "Clean your room",
+      "Make a budget", "Plan your week", "Meditate for 10 min"
+    ];
+    let rejectedTasks = [];
+    let archivedTasks = [];
+    let currentUser = { username: "You", score: 0 };
+    let leaderboard = [
+      { username: "LazyPanda", score: 102 },
+      { username: "ProcrastinKing", score: 87 },
+      { username: "TooTired", score: 73 },
+      { username: "LastMinuteLarry", score: 65 },
+      { username: "CouchPotato", score: 49 }
+    ];
+    leaderboard.push(currentUser);
+
+    function getRandomTask() {
+      return tasks[Math.floor(Math.random() * tasks.length)];
+    }
+
+    function rejectTask() {
+      let taskBox = document.getElementById("task-box");
+      let task = taskBox.innerText;
+      rejectedTasks.push(task);
+      currentUser.score++;
+      updateTaskGraveyard();
+      updateLeaderboard();
+      document.getElementById("boo-sound").play();
+      taskBox.style.transform = "translateX(-100px) rotate(-10deg)";
+      taskBox.style.opacity = "0";
+      setTimeout(() => {
+        taskBox.innerText = getRandomTask();
+        taskBox.style.transform = "translateX(0) rotate(0)";
+        taskBox.style.opacity = "1";
+      }, 300);
+    }
+
+    // New function for the "Maybe Later" button
+    function laterTask() {
+      let taskBox = document.getElementById("task-box");
+      // Optionally, you might not want to increase the score here.
+      taskBox.style.transform = "translateX(100px) rotate(10deg)";
+      taskBox.style.opacity = "0";
+      setTimeout(() => {
+        taskBox.innerText = getRandomTask();
+        taskBox.style.transform = "translateX(0) rotate(0)";
+        taskBox.style.opacity = "1";
+      }, 300);
+    }
+
+    // New function to toggle the archive section visibility
+    function toggleArchive() {
+      let archiveDiv = document.getElementById("task-archive");
+      archiveDiv.classList.toggle("hidden");
+    }
+
+    // New function to update the task graveyard display
+    function updateTaskGraveyard() {
+      let graveyardDiv = document.getElementById("task-graveyard");
+      graveyardDiv.innerHTML = "<h3>Task Graveyard</h3><ul>" +
+        rejectedTasks.map(task => `<li>${task}</li>`).join("") +
+        "</ul>";
+    }
+
+    function updateLeaderboard() {
+      let leaderboardBody = document.getElementById("leaderboard-body");
+      leaderboard.sort((a, b) => b.score - a.score);
+      leaderboardBody.innerHTML = "";
+      leaderboard.forEach((entry, index) => {
+        let row = `<tr class="${entry.username === "You" ? 'current-user' : ''}">
+                     <td>${index + 1}</td>
+                     <td>${entry.username}</td>
+                     <td>${entry.score}</td>
+                   </tr>`;
+        leaderboardBody.innerHTML += row;
+      });
+    }
+
+    // Initialize the task and leaderboard on page load
+    document.getElementById("task-box").innerText = getRandomTask();
+    updateLeaderboard();
+  </script>
 </body>
 </html>
